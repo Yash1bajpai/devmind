@@ -172,10 +172,14 @@ def generate(
 
 @app.callback(invoke_without_command=True)
 def main(
+    ctx: typer.Context,
     version: bool = typer.Option(False, "--version", help="Show version information.")
 ):
     if version:
         typer.echo("Programmer Assistant CLI v2.0.0")
+        raise typer.Exit()
+    if ctx.invoked_subcommand is None:
+        typer.echo(ctx.get_help())
         raise typer.Exit()
 
 if __name__ == "__main__":

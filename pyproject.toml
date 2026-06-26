@@ -19,6 +19,7 @@ dependencies = [
 
 [project.scripts]
 agent = "src.cli.app:app"
+devmind = "src.cli.app:app"
 
 [tool.setuptools.packages.find]
 where = ["."]
