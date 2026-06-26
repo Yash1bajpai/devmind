@@ -59,14 +59,14 @@ def execute_list_directory(path: str = ".") -> str:
             indent = "    " * depth
             rel_path = current_path.relative_to(root_path)
             if rel_path != Path("."):
-                output_lines.append(f"{indent}📁 {current_path.name}/")
+                output_lines.append(f"{indent}[DIR] {current_path.name}/")
                 file_indent = indent + "    "
             else:
                 file_indent = ""
 
             for file in sorted(files):
                 if file not in ignore_dirs:
-                    output_lines.append(f"{file_indent}📄 {file}")
+                    output_lines.append(f"{file_indent}[FILE] {file}")
 
         return "\n".join(output_lines)
     except PermissionError:
@@ -248,7 +248,7 @@ GIT_STATUS_TOOL = Tool(
 )
 
 def get_all_tools() -> List[Tool]:
-    """Return all available tools for V2 Week 2 scope."""
+    """Return all available tools."""
     return [
         READ_FILE_TOOL,
         WRITE_FILE_TOOL,

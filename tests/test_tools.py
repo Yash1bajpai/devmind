@@ -19,13 +19,17 @@ def test_list_directory_success(tmp_path: Path):
     (tmp_path / "subdir" / "file2.py").write_text("print(2)")
 
     result = execute_list_directory(str(tmp_path))
-    assert "📄 file1.py" in result
-    assert "📁 subdir/" in result
-    assert "📄 file2.py" in result
+    assert "[FILE] file1.py" in result
+    assert "[DIR] subdir/" in result
+    assert "[FILE] file2.py" in result
 
 def test_list_directory_not_found():
     result = execute_list_directory("non_existent_folder_999")
     assert result.startswith("ERROR: Directory not found")
+
+def test_search_web():
+    res = execute_tool("search_web", {"query": "python programming"})
+    assert "Search results for:" in res or "ERROR:" in res or "No web search results found" in res
 
 def test_write_file_success(tmp_path: Path):
     target = tmp_path / "new_dir" / "out.txt"

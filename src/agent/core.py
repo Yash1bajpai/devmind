@@ -27,11 +27,13 @@ RULES:
 class Agent:
     """Core autonomous coding agent implementing the ReAct tool-use loop."""
 
-    def __init__(self, provider: BaseProvider, memory: ConversationMemory):
+    def __init__(self, provider: BaseProvider, memory: ConversationMemory, max_iterations: int = 10, verbose: bool = True):
         self.provider = provider
         self.memory = memory
         self.tools = get_all_tools()
         self.system = SYSTEM_PROMPT
+        self.max_iterations = max_iterations
+        self.verbose = verbose
         self.total_input_tokens = 0
         self.total_output_tokens = 0
 
@@ -49,12 +51,12 @@ class Agent:
         self.memory.add("user", user_input)
         messages = self.memory.get()
 
-        display.print_thinking("Thinking...")
+        if self.verbose:
+            display.print_thinking("Thinking...")
 
-        max_iterations = 10
         iteration = 0
 
-        while iteration < max_iterations:
+        while iteration < self.max_iterations:
             iteration += 1
 
             response = self.provider.complete(
@@ -69,20 +71,32 @@ class Agent:
             if response.has_tool_calls:
                 self.memory.add_raw(response.raw_assistant_message)
                 for tool_call in response.tool_calls:
-                    display.print_tool_call(tool_call.name, tool_call.args)
+                    if self.verbose:
+                        display.print_tool_call(tool_call.name, tool_call.args)
 
                     start = time.time()
                     result = execute_tool(tool_call.name, tool_call.args)
                     duration = time.time() - start
 
-                    display.print_tool_result(result, duration)
+                    if self.verbose:
+                        display.print_tool_result(result, duration)
 
                     self.memory.add_raw(self.provider.format_tool_result_message(tool_call.id, result))
 
                 messages = self.memory.get()
             else:
-                final_text = response.text
-                self.memory.add("assistant", final_text)
-                return final_text
+                if stream and hasattr(self.provider, "stream"):
+                    final_text = ""
+                    display.console.print("\n[bold green]Response:[/bold green]\n")
+                    for chunk in self.provider.stream(messages, self.tools, self.system):
+                        final_text += chunk
+                        display.console.print(chunk, end="")
+                    display.console.print()
+                    self.memory.add("assistant", final_text)
+                    return final_text
+                else:
+                    final_text = response.text
+                    self.memory.add("assistant", final_text)
+                    return final_text
 
         return "Max tool iterations reached. Please try a more specific question."
