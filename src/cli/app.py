@@ -9,8 +9,12 @@ from src.cli import display
 
 app = typer.Typer(help="Programmer Assistant CLI Coding Agent")
 
-def get_provider_instance(provider_name: str):
+def get_provider_instance(provider_name: Any):
     """Factory to return the selected LLM provider."""
+    if hasattr(provider_name, "default"):
+        provider_name = provider_name.default
+    if not isinstance(provider_name, str):
+        provider_name = str(provider_name or DEFAULT_PROVIDER)
     name_clean = provider_name.lower().strip()
     if name_clean == "anthropic":
         return AnthropicProvider()
@@ -61,6 +65,12 @@ def repl(
     no_stream: bool = typer.Option(False, "--no-stream", help="Disable output streaming."),
 ):
     """Start an interactive multi-turn REPL chat session."""
+    if hasattr(provider, "default"):
+        provider = provider.default
+    if hasattr(verbose, "default"):
+        verbose = bool(verbose.default)
+    if hasattr(no_stream, "default"):
+        no_stream = bool(no_stream.default)
     try:
         prov = get_provider_instance(provider)
         memory = ConversationMemory()
