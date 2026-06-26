@@ -15,7 +15,7 @@
 ---
 
 <div align="center">
-  ![DevMind CLI Demo](assets/demo.png)
+  <img src="assets/demo.png" alt="DevMind CLI Demo" width="800" />
 </div>
 
 ---
