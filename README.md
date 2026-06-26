@@ -8,7 +8,14 @@
   ![OpenAI Support](https://img.shields.io/badge/Model-OpenAI%20GPT--4o-green.svg)
   ![Anthropic Support](https://img.shields.io/badge/Model-Claude%203.5%20Sonnet-orange.svg)
   ![Gemini Support](https://img.shields.io/badge/Model-Gemini%201.5%20Flash-blue.svg)
+  [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2.svg?logo=linkedin&logoColor=white)](https://linkedin.com/in/yash-bajpai)
   ![License](https://img.shields.io/badge/License-MIT-teal.svg)
+</div>
+
+---
+
+<div align="center">
+  ![DevMind CLI Demo](assets/demo.png)
 </div>
 
 ---
@@ -21,18 +28,25 @@ Built with a clean **ReAct (Reasoning + Acting)** cognitive architecture, DevMin
 
 ---
 
+## ❓ Why DevMind?
+
+Unlike cloud-dependent tools like GitHub Copilot CLI, **DevMind** is built for offline-capable, cost-zero local execution. V2 will integrate a custom-trained 124M parameter LLM as the local backend — enabling completely private, zero-latency execution with no external API key required.
+
+---
+
 ## 🔥 Key Architectural Highlights
 
 - 🧠 **Autonomous ReAct Loop**: Implements multi-step cognitive reasoning (`Thought → Action → Observation → Repeat`), allowing the agent to solve complex multi-file engineering tasks independently (up to 10 autonomous tool iterations per query).
 - 🔌 **Universal Multi-Provider Backend**: Abstracted provider layer supporting seamless switching between industry-leading LLMs (`OpenAI GPT-4o`, `Anthropic Claude 3.5 Sonnet`, and `Google Gemini 1.5 Flash`).
+- 💰 **Real-Time Dynamic Cost Tracker**: Live token computation engine that calculates exact input/output token expenditure and monetary cost in real time per session—a standout capability for budget-conscious enterprise deployments.
 - 🛠️ **Comprehensive Developer Toolset**:
   - `read_file`: Safely parses local file contents to prevent hallucinations.
   - `write_file`: Actively writes or overwrites code files with automatic directory creation.
   - `list_directory`: Recursively maps workspace architecture.
-  - `run_code`: Executes arbitrary Python code inside isolated subprocesses with strict execution timeout enforcement (`CODE_EXECUTION_TIMEOUT`).
+  - `run_code`: Executes arbitrary Python code inside isolated subprocesses with strict execution timeout enforcement (`CODE_EXECUTION_TIMEOUT = 10s`).
   - `search_web`: Queries live DuckDuckGo indexes for real-time API docs and error debugging.
   - `git_status`: Monitors uncommitted workspace changes and diff statistics.
-- 🎨 **Rich Syntax-Highlighted UI**: Beautiful terminal display powered by `Rich`, featuring markdown rendering, tool execution badges (`[TOOL]`, `[OK]`), real-time token tracking, and token pricing calculation.
+- 🎨 **Rich Syntax-Highlighted UI**: Beautiful terminal display powered by `Rich`, featuring markdown rendering and execution status badges (`[TOOL]`, `[OK]`).
 - ⚡ **Streaming CLI Response**: Interactive streaming text output with `--no-stream` toggle support.
 
 ---
@@ -51,11 +65,11 @@ devmind/
     │   └── tools.py             ← Universal tool schema & execution handlers
     ├── cli/
     │   ├── app.py               ← Typer CLI command definitions (`chat` & `repl`)
-    │   └── display.py           ← Rich terminal UI components
+    │   └── display.py           ← Rich terminal UI components & live cost tracking
     ├── providers/
     │   ├── base.py              ← Abstract BaseProvider interface
     │   ├── openai_provider.py   ← OpenAI backend implementation
-    │   ├── anthropic_provider.py ← Anthropic Claude backend implementation
+    │   ├── anthropic_provider.py ← Anthropic Claude 3.5 Sonnet backend implementation
     │   └── gemini_provider.py   ← Google Gemini backend implementation
     └── utils/
         └── config.py            ← Environment loader & dynamic token cost calculator
@@ -96,7 +110,7 @@ graph TD
 Clone the repository and install the editable package locally:
 
 ```bash
-git clone https://github.com/yasharthbajpai/devmind.git
+git clone https://github.com/Yash1bajpai/devmind.git
 cd devmind
 pip install -e .
 ```
@@ -143,6 +157,22 @@ DevMind maintains a **100% passing unit test suite** covering all tool dispatche
 pytest tests/ -v
 ```
 
+```text
+============================= test session starts =============================
+collecting ... collected 8 items
+
+tests/test_tools.py::test_read_file_success PASSED                       [ 12%]
+tests/test_tools.py::test_read_file_not_found PASSED                     [ 25%]
+tests/test_tools.py::test_list_directory_success PASSED                  [ 37%]
+tests/test_tools.py::test_list_directory_not_found PASSED                [ 50%]
+tests/test_tools.py::test_write_file_success PASSED                      [ 62%]
+tests/test_tools.py::test_run_code_success PASSED                        [ 75%]
+tests/test_tools.py::test_git_status_tool PASSED                         [ 87%]
+tests/test_tools.py::test_execute_tool_dispatcher PASSED                 [100%]
+
+============================== 8 passed in 2.20s ==============================
+```
+
 ---
 
 ## 🛡️ Security & Sandbox Best Practices
@@ -153,5 +183,5 @@ pytest tests/ -v
 ---
 
 <div align="center">
-  <p>Engineered by <a href="https://github.com/yasharthbajpai">Yash Bajpai</a></p>
+  <p>Engineered by <a href="https://github.com/Yash1bajpai">Yash Bajpai</a></p>
 </div>
