@@ -26,6 +26,8 @@ PRICING = {
     "gpt-4o":             {"input": 0.0000025, "output": 0.00001},
     "gpt-4o-mini":        {"input": 0.00000015, "output": 0.0000006},
     "gemini-1.5-flash":   {"input": 0.000000075,"output": 0.0000003},
+    "gemini-2.5-flash":   {"input": 0.000000075,"output": 0.0000003},
+    "gemini-2.0-flash":   {"input": 0.000000075,"output": 0.0000003},
 }
 
 def estimate_cost(model: str, input_tokens: int, output_tokens: int) -> float:

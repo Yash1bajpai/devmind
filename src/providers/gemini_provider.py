@@ -1,7 +1,10 @@
 from google import genai
+# pyrefly: ignore [missing-import]
 from google.genai import types
 from typing import Any, Dict, List
+# pyrefly: ignore [missing-import]
 from src.providers.base import BaseProvider, ProviderResponse, Tool, ToolCall
+# pyrefly: ignore [missing-import]
 from src.utils.config import get_env_or_raise
 
 class GeminiProvider(BaseProvider):
@@ -20,7 +23,7 @@ class GeminiProvider(BaseProvider):
             elif "parts" in msg:
                 formatted.append(msg)
             else:
-                role = msg.get("role", "user")
+                role = msg.get("role", "user")  
                 content = msg.get("content", "")
                 if role == "assistant":
                     role = "model"
