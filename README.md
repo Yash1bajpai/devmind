@@ -6,8 +6,8 @@
   ![Python Version](https://img.shields.io/badge/python-3.11%2B-blue.svg)
   ![CLI Framework](https://img.shields.io/badge/CLI-Typer%20%7C%20Rich-purple.svg)
   ![OpenAI Support](https://img.shields.io/badge/Model-OpenAI%20GPT--4o-green.svg)
-  ![Anthropic Support](https://img.shields.io/badge/Model-Claude%203.5%20Sonnet-orange.svg)
-  ![Gemini Support](https://img.shields.io/badge/Model-Gemini%201.5%20Flash-blue.svg)
+  ![Anthropic Support](https://img.shields.io/badge/Model-claude--3--5--sonnet--20241022-orange.svg)
+  ![Gemini Support](https://img.shields.io/badge/Model-Gemini%202.5%20Flash-blue.svg)
   [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2.svg?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/yash-bajpai-b5a86332a/)
   ![License](https://img.shields.io/badge/License-MIT-teal.svg)
 </div>
@@ -37,7 +37,7 @@ Unlike cloud-dependent tools like GitHub Copilot CLI, **DevMind** is built for o
 ## 🔥 Key Architectural Highlights
 
 - 🧠 **Autonomous ReAct Loop**: Implements multi-step cognitive reasoning (`Thought → Action → Observation → Repeat`), allowing the agent to solve complex multi-file engineering tasks independently (up to 10 autonomous tool iterations per query).
-- 🔌 **Universal Multi-Provider Backend**: Abstracted provider layer supporting seamless switching between industry-leading LLMs (`OpenAI GPT-4o`, `Anthropic Claude 3.5 Sonnet`, and `Google Gemini 1.5 Flash`).
+- 🔌 **Universal Multi-Provider Backend**: Abstracted provider layer supporting seamless switching between industry-leading LLMs (`OpenAI GPT-4o`, `Anthropic claude-3-5-sonnet-20241022`, and `Google gemini-2.5-flash`).
 - 💰 **Real-Time Dynamic Cost Tracker**: Live token computation engine that calculates exact input/output token expenditure and monetary cost in real time per session—a standout capability for budget-conscious enterprise deployments.
 - 🛠️ **Comprehensive Developer Toolset**:
   - `read_file`: Safely parses local file contents to prevent hallucinations.
@@ -55,7 +55,7 @@ Unlike cloud-dependent tools like GitHub Copilot CLI, **DevMind** is built for o
 
 ```
 devmind/
-├── pyproject.toml               ← Package metadata & Typer binary entry point (`agent`)
+├── pyproject.toml               ← Package metadata & Typer binary entry point (`agent` / `devmind`)
 ├── requirements.txt             ← Core dependencies (Typer, Rich, OpenAI, Anthropic, Gemini, DDGS)
 ├── .env.example                 ← Environment variable configuration template
 └── src/
@@ -64,13 +64,13 @@ devmind/
     │   ├── memory.py            ← Sliding-window conversation buffer (max 20 turns)
     │   └── tools.py             ← Universal tool schema & execution handlers
     ├── cli/
-    │   ├── app.py               ← Typer CLI command definitions (`chat` & `repl`)
+    │   ├── app.py               ← Typer CLI command definitions (`chat`, `repl`, `review`, `debug`, `generate`)
     │   └── display.py           ← Rich terminal UI components & live cost tracking
     ├── providers/
     │   ├── base.py              ← Abstract BaseProvider interface
     │   ├── openai_provider.py   ← OpenAI backend implementation
-    │   ├── anthropic_provider.py ← Anthropic Claude 3.5 Sonnet backend implementation
-    │   └── gemini_provider.py   ← Google Gemini backend implementation
+    │   ├── anthropic_provider.py ← Anthropic claude-3-5-sonnet-20241022 backend implementation
+    │   └── gemini_provider.py   ← Google gemini-2.5-flash backend implementation
     └── utils/
         └── config.py            ← Environment loader & dynamic token cost calculator
 ```
@@ -133,25 +133,47 @@ GEMINI_API_KEY=AIzaSy...
 
 ### 3. Usage
 
-#### Single-Turn Command (`chat`)
+#### Interactive Multi-Turn REPL Mode (Default)
+Start a continuous pair-programming session directly by invoking `devmind`:
+
+```bash
+devmind --provider anthropic
+# Or explicitly: devmind repl --provider gemini
+```
+
+#### Single-Turn Coding (`chat`)
 Execute an instant autonomous coding task directly from your terminal:
 
 ```bash
-agent chat "Create a python script fib.py that prints the first 10 Fibonacci numbers and run it to verify." --provider openai
+devmind chat "Create a python script fib.py that prints the first 10 Fibonacci numbers and run it to verify." --provider openai
 ```
 
-#### Interactive Multi-Turn Mode (`repl`)
-Start a continuous pair-programming session:
+#### Automated Code Review (`review`)
+Inspect local code files for bugs, security vulnerabilities, and clean coding practices:
 
 ```bash
-agent repl --provider anthropic
+devmind review src/utils/config.py --provider gemini
+```
+
+#### Autonomous Error Debugging (`debug`)
+Feed error tracebacks directly into DevMind to diagnose root causes and write fixes:
+
+```bash
+devmind debug src/app.py --error "AttributeError: 'NoneType' object has no attribute 'stream'"
+```
+
+#### Direct File Generation (`generate`)
+Generate complete code files autonomously and save them to your workspace:
+
+```bash
+devmind generate "Create an async web scraper using aiohttp and BeautifulSoup" --output scraper.py
 ```
 
 ---
 
 ## 🧪 Testing & Verification
 
-DevMind maintains a **100% passing unit test suite** covering all tool dispatchers, filesystem handlers, and subprocess safety boundaries:
+DevMind maintains a **100% passing unit test suite** covering all tool dispatchers, filesystem handlers, UX features, and subprocess safety boundaries:
 
 ```bash
 pytest tests/ -v
@@ -159,18 +181,26 @@ pytest tests/ -v
 
 ```text
 ============================= test session starts =============================
-collecting ... collected 8 items
+collecting ... collected 16 items
 
-tests/test_tools.py::test_read_file_success PASSED                       [ 12%]
-tests/test_tools.py::test_read_file_not_found PASSED                     [ 25%]
-tests/test_tools.py::test_list_directory_success PASSED                  [ 37%]
+tests/test_providers.py::test_anthropic_provider_schema PASSED           [  6%]
+tests/test_providers.py::test_openai_provider_schema PASSED              [ 12%]
+tests/test_providers.py::test_gemini_provider_schema PASSED              [ 18%]
+tests/test_providers.py::test_provider_tool_result_format PASSED         [ 25%]
+tests/test_tools.py::test_read_file_success PASSED                       [ 31%]
+tests/test_tools.py::test_read_file_not_found PASSED                     [ 37%]
+tests/test_tools.py::test_list_directory_success PASSED                  [ 43%]
 tests/test_tools.py::test_list_directory_not_found PASSED                [ 50%]
+tests/test_tools.py::test_search_web PASSED                              [ 56%]
 tests/test_tools.py::test_write_file_success PASSED                      [ 62%]
-tests/test_tools.py::test_run_code_success PASSED                        [ 75%]
-tests/test_tools.py::test_git_status_tool PASSED                         [ 87%]
-tests/test_tools.py::test_execute_tool_dispatcher PASSED                 [100%]
+tests/test_tools.py::test_run_code_success PASSED                        [ 68%]
+tests/test_tools.py::test_git_status_tool PASSED                         [ 75%]
+tests/test_tools.py::test_execute_tool_dispatcher PASSED                 [ 81%]
+tests/test_ux_features.py::test_parse_at_mentions PASSED                 [ 87%]
+tests/test_ux_features.py::test_smart_startup_project_mode PASSED        [ 93%]
+tests/test_ux_features.py::test_status_spinner_helpers PASSED            [100%]
 
-============================== 8 passed in 2.20s ==============================
+============================= 16 passed in 6.32s ==============================
 ```
 
 ---
