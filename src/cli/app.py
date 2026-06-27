@@ -1,6 +1,6 @@
 import time
 import typer
-from typing import Optional
+from typing import Optional, Any
 from src.utils.config import DEFAULT_PROVIDER, ConfigError
 from src.providers.anthropic_provider import AnthropicProvider
 from src.agent.memory import ConversationMemory
