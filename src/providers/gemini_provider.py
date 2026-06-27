@@ -10,7 +10,7 @@ from src.utils.config import get_env_or_raise
 class GeminiProvider(BaseProvider):
     """LLM Provider implementation for Google Gemini models via google-genai SDK."""
 
-    def __init__(self, model: str = "gemini-1.5-flash"):
+    def __init__(self, model: str = "gemini-2.5-flash"):
         api_key = get_env_or_raise("GEMINI_API_KEY")
         self.client = genai.Client(api_key=api_key)
         self.model = model

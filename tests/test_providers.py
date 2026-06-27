@@ -30,7 +30,7 @@ def test_openai_provider_schema():
     assert converted[0]["function"]["name"] == "test_tool"
 
 def test_gemini_provider_schema():
-    prov = GeminiProvider(model="gemini-1.5-flash")
+    prov = GeminiProvider(model="gemini-2.5-flash")
     converted = prov._convert_tools([sample_tool])
     assert len(converted) == 1
     # Check tool object created by google-genai
