@@ -3,9 +3,9 @@ from google import genai
 from google.genai import types
 from typing import Any, Dict, List
 # pyrefly: ignore [missing-import]
-from src.providers.base import BaseProvider, ProviderResponse, Tool, ToolCall
+from .base import BaseProvider, ProviderResponse, Tool, ToolCall
 # pyrefly: ignore [missing-import]
-from src.utils.config import get_env_or_raise
+from ..utils.config import get_env_or_raise
 
 class GeminiProvider(BaseProvider):
     """LLM Provider implementation for Google Gemini models via google-genai SDK."""

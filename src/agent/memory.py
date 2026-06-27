@@ -1,5 +1,5 @@
 from typing import Any, Dict, List
-from src.utils.config import MAX_CONVERSATION_MESSAGES
+from ..utils.config import MAX_CONVERSATION_MESSAGES
 
 class ConversationMemory:
     """Manages in-memory conversation history with a sliding window limit."""

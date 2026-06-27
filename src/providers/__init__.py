@@ -1,7 +1,7 @@
-from src.providers.base import BaseProvider
-from src.providers.anthropic_provider import AnthropicProvider
-from src.providers.gemini_provider import GeminiProvider
-from src.providers.openai_provider import OpenAIProvider
+from .base import BaseProvider
+from .anthropic_provider import AnthropicProvider
+from .gemini_provider import GeminiProvider
+from .openai_provider import OpenAIProvider
 
 __all__ = [
     "BaseProvider",

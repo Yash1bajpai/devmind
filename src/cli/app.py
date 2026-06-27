@@ -1,10 +1,10 @@
 import time
 import typer
 from typing import Optional, Any
-from src.utils.config import DEFAULT_PROVIDER, ConfigError
-from src.providers.anthropic_provider import AnthropicProvider
-from src.agent.memory import ConversationMemory
-from src.agent.core import Agent
+from ..utils.config import DEFAULT_PROVIDER, ConfigError
+from ..providers.anthropic_provider import AnthropicProvider
+from ..agent.memory import ConversationMemory
+from ..agent.core import Agent
 from . import display
 
 app = typer.Typer(help="Programmer Assistant CLI Coding Agent")
@@ -19,10 +19,10 @@ def get_provider_instance(provider_name: Any):
     if name_clean == "anthropic":
         return AnthropicProvider()
     elif name_clean == "gemini":
-        from src.providers.gemini_provider import GeminiProvider
+        from ..providers.gemini_provider import GeminiProvider
         return GeminiProvider()
     elif name_clean in ["openai", "gpt", "gpt-4o"]:
-        from src.providers.openai_provider import OpenAIProvider
+        from ..providers.openai_provider import OpenAIProvider
         return OpenAIProvider()
     else:
         display.print_error(f"Provider '{provider_name}' is not implemented. Using Anthropic fallback.")

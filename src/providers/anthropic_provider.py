@@ -1,7 +1,7 @@
 import anthropic
 from typing import Any, Dict, List, Optional
-from src.providers.base import BaseProvider, ProviderResponse, Tool, ToolCall
-from src.utils.config import get_env_or_raise
+from .base import BaseProvider, ProviderResponse, Tool, ToolCall
+from ..utils.config import get_env_or_raise
 
 class AnthropicProvider(BaseProvider):
     """LLM Provider implementation for Anthropic Claude models."""

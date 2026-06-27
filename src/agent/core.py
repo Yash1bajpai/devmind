@@ -2,11 +2,11 @@ import os
 import re
 import time
 from typing import Any, Dict
-from src.providers.base import BaseProvider
-from src.agent.memory import ConversationMemory
-from src.agent.tools import get_all_tools, execute_tool
-from src.cli import display
-from src.utils.config import estimate_cost
+from ..providers.base import BaseProvider
+from .memory import ConversationMemory
+from .tools import get_all_tools, execute_tool
+from ..cli import display
+from ..utils.config import estimate_cost
 
 RULES_PROMPT = """RULES:
 1. Always use read_file tool before answering questions about a specific file.

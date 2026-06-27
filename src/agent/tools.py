@@ -4,8 +4,8 @@ import tempfile
 import subprocess
 from pathlib import Path
 from typing import Any, Dict, List
-from src.providers.base import Tool
-from src.utils.config import CODE_EXECUTION_TIMEOUT
+from ..providers.base import Tool
+from ..utils.config import CODE_EXECUTION_TIMEOUT
 
 def execute_read_file(path: str) -> str:
     """Read the contents of any file and return it as a string."""
