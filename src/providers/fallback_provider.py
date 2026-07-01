@@ -52,14 +52,14 @@ class FallbackProvider(BaseProvider):
                 self._current_name = name
                 self._current_provider = provider
                 return
-            except ConfigError:
+            except Exception:
                 continue
         raise ConfigError(
-            "No API keys found for any provider (gemini, anthropic, openai). "
-            "Please set at least one key in your .env file."
+            "No valid API keys found or initialization failed for all providers (gemini, anthropic, openai). "
+            "Please check your .env file."
         )
 
-    def _switch_next(self, failed_name: str):
+    def _switch_next(self, failed_name: str, reason: str = ""):
         """Switch to the next available provider after a failure."""
         names = [n for n, _ in self._chain]
         try:
@@ -73,15 +73,17 @@ class FallbackProvider(BaseProvider):
                 self._current_name = name
                 self._current_provider = provider
                 if self._warn_fn:
-                    self._warn_fn(failed_name, name)
+                    try:
+                        self._warn_fn(failed_name, name, reason)
+                    except TypeError:
+                        self._warn_fn(failed_name, name)
                 return
-            except ConfigError:
+            except Exception:
                 continue
 
         raise RateLimitError(
             failed_name,
-            f"Rate limit hit and no fallback providers available. "
-            f"All remaining providers in chain missing API keys."
+            f"Provider '{failed_name}' failed ({reason}) and no remaining fallback providers available."
         )
 
     @property
@@ -92,9 +94,11 @@ class FallbackProvider(BaseProvider):
         while True:
             try:
                 return self._current_provider.complete(messages, tools, system)  # type: ignore
-            except RateLimitError:
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except Exception as e:
                 failed = self._current_name or "unknown"
-                self._switch_next(failed)
+                self._switch_next(failed, reason=str(e))
 
     def stream(self, messages: List[Dict[str, Any]], tools: List[Tool], system: str) -> Any:
         # streams can't easily retry mid-flight, so fall back to complete()

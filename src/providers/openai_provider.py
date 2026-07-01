@@ -5,11 +5,16 @@ from .base import BaseProvider, ProviderResponse, Tool, ToolCall, RateLimitError
 from ..utils.config import get_env_or_raise
 
 class OpenAIProvider(BaseProvider):
-    """LLM Provider implementation for OpenAI GPT models."""
+    """LLM Provider implementation for OpenAI GPT models and local OpenAI-compatible servers (Ollama/LM Studio)."""
 
-    def __init__(self, model: str = "gpt-4o-mini"):
-        api_key = get_env_or_raise("OPENAI_API_KEY")
-        self.client = openai.OpenAI(api_key=api_key)
+    def __init__(self, model: str = "gpt-4o-mini", base_url: Optional[str] = None):
+        import os
+        base_url = base_url or os.getenv("OPENAI_BASE_URL") or os.getenv("OLLAMA_HOST")
+        if base_url:
+            api_key = os.getenv("OPENAI_API_KEY", "ollama")
+        else:
+            api_key = get_env_or_raise("OPENAI_API_KEY")
+        self.client = openai.OpenAI(api_key=api_key, base_url=base_url)
         self.model = model
 
     def _convert_tools(self, tools: List[Tool]) -> List[Dict[str, Any]]:
@@ -83,6 +88,24 @@ class OpenAIProvider(BaseProvider):
                         "arguments": tc.function.arguments,
                     }
                 })
+
+        if not tool_calls and text.strip().startswith('{"name":') and '"arguments"' in text:
+            try:
+                import uuid
+                tc_data = json.loads(text.strip())
+                if "name" in tc_data and "arguments" in tc_data:
+                    args_val = tc_data["arguments"]
+                    parsed_args = args_val if isinstance(args_val, dict) else json.loads(args_val)
+                    tc_id = f"call_{uuid.uuid4().hex[:8]}"
+                    tool_calls.append(ToolCall(id=tc_id, name=tc_data["name"], args=parsed_args))
+                    raw_tool_calls.append({
+                        "id": tc_id,
+                        "type": "function",
+                        "function": {"name": tc_data["name"], "arguments": json.dumps(parsed_args)}
+                    })
+                    text = ""
+            except Exception:
+                pass
 
         raw_msg: Dict[str, Any] = {"role": "assistant"}
         if msg.content is not None:

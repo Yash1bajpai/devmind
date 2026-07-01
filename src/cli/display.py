@@ -1,5 +1,17 @@
 import sys
 from typing import Any, Dict
+
+# Ensure safe output encoding on Windows terminals to prevent UnicodeEncodeError
+for stream in (sys.stdout, sys.stderr):
+    if hasattr(stream, "reconfigure"):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            try:
+                stream.reconfigure(errors="replace")
+            except Exception:
+                pass
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.markdown import Markdown
@@ -65,7 +77,8 @@ def print_tool_result(result: str, duration: float, tool_name: str = ""):
             preview = preview[:117] + "..."
         if len(lines) > 3:
             preview += f" ... (+{len(lines)-3} lines)"
-        console.print(f"  [bold green][OBSERVE][/bold green] Done ({duration:.1f}s) → [dim]{preview}[/dim]")
+        console.print(f"  [bold green][OBSERVE][/bold green] Done ({duration:.1f}s) -> [dim]{preview}[/dim]")
+
 
 def print_thinking(text: str):
     """Print the agent's reasoning step (verbose ReAct trace)."""
@@ -96,6 +109,13 @@ def print_warn(message: str):
     """Print a warning message (e.g. rate limit fallback)."""
     console.print(f"[bold yellow][WARN][/bold yellow] {message}")
 
-def print_fallback_switch(from_provider: str, to_provider: str):
-    """Print a clean provider-switch warning on rate limit."""
-    print_warn(f"{from_provider.capitalize()} rate limit hit. Switching to {to_provider.capitalize()}...")
+def print_fallback_switch(from_provider: str, to_provider: str, reason: str = ""):
+    """Print a clean provider-switch warning on rate limit or API/auth error."""
+    msg = f"{from_provider.capitalize()} failed or rate-limited. Switching to {to_provider.capitalize()}..."
+    if reason:
+        low = reason.lower()
+        if "auth" in low or "key" in low or "401" in low or "permission" in low:
+            msg = f"{from_provider.capitalize()} auth/API error. Switching to {to_provider.capitalize()}..."
+        elif "rate" in low or "429" in low or "quota" in low:
+            msg = f"{from_provider.capitalize()} rate limit hit. Switching to {to_provider.capitalize()}..."
+    print_warn(msg)

@@ -133,9 +133,9 @@ def _sandbox_check(code: str) -> str | None:
             f"SANDBOX BLOCK: The following forbidden constructs were detected:\n"
             f"  - {bullet_list}\n\n"
             f"run_code is for pure computation only (math, algorithms, data processing).\n"
-            f"For file I/O → use read_file / write_file tools.\n"
-            f"For shell commands → use git_status / git_diff tools.\n"
-            f"If you need to run an existing script → use the run_file tool."
+            f"For file I/O -> use read_file / write_file tools.\n"
+            f"For shell commands -> use git_status / git_diff tools.\n"
+            f"If you need to run an existing script -> use the run_file tool."
         )
     return None
 
@@ -459,6 +459,16 @@ def get_all_tools() -> List[Tool]:
         GIT_STATUS_TOOL,
         GIT_DIFF_TOOL,
         GIT_COMMIT_TOOL,
+    ]
+
+def get_readonly_tools() -> List[Tool]:
+    """Return read-only inspection tools (safe for code review without modifying disk)."""
+    return [
+        READ_FILE_TOOL,
+        LIST_DIRECTORY_TOOL,
+        SEARCH_WEB_TOOL,
+        GIT_STATUS_TOOL,
+        GIT_DIFF_TOOL,
     ]
 
 def execute_tool(name: str, args: Dict[str, Any]) -> str:

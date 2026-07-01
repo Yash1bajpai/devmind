@@ -9,6 +9,17 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Ensure safe output encoding on Windows terminals to prevent UnicodeEncodeError
+for stream in (sys.stdout, sys.stderr):
+    if hasattr(stream, "reconfigure"):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            try:
+                stream.reconfigure(errors="replace")
+            except Exception:
+                pass
+
 try:
     from rich.console import Console
     from rich.panel import Panel
@@ -157,15 +168,15 @@ def _show_welcome():
         console.print(panel)
         console.print()
     else:
-        print("\n╔══════════════════════════════════════╗")
-        print("║         Welcome to DevMind           ║")
-        print("║  Built by Yash Bajpai                ║")
-        print("║  github.com/Yash1bajpai              ║")
-        print("║  linkedin.com/in/yash-bajpai-b5a86332a ║")
-        print("╚══════════════════════════════════════╝\n")
+        print("\n+--------------------------------------+")
+        print("|         Welcome to DevMind           |")
+        print("|  Built by Yash Bajpai                |")
+        print("|  github.com/Yash1bajpai              |")
+        print("|  linkedin.com/in/yash-bajpai-b5a86332a |")
+        print("+--------------------------------------+\n")
 
 def _step_api_keys():
-    """[1/3] — Check which API keys are set and offer to add missing ones."""
+    """[1/3] - Check which API keys are set and offer to add missing ones."""
     _print("\n[bold][[1/3]][/bold] [cyan]API Key Setup[/cyan]" if console else "\n[1/3] API Key Setup")
 
     keys_to_check = [
@@ -178,9 +189,9 @@ def _step_api_keys():
     for env_key, label in keys_to_check:
         val = os.getenv(env_key, "")
         if val:
-            _print(f"  [green]✓[/green] {label} — configured" if console else f"  ✓ {label} — configured")
+            _print(f"  [green][OK][/green] {label} - configured" if console else f"  [OK] {label} - configured")
         else:
-            _print(f"  [red]✗[/red] {label} — missing" if console else f"  ✗ {label} — missing")
+            _print(f"  [red][MISSING][/red] {label} - missing" if console else f"  [MISSING] {label} - missing")
             missing.append((env_key, label))
 
     if missing:
@@ -216,7 +227,7 @@ def _write_env_key(key: str, value: str):
     env_path.write_text("".join(lines), encoding="utf-8")
 
 def _step_system_specs():
-    """[2/3] — Detect RAM, CPU, GPU and recommend a local model."""
+    """[2/3] - Detect RAM, CPU, GPU and recommend a local model."""
     _print("\n[bold][[2/3]][/bold] [cyan]System Detection[/cyan]" if console else "\n[2/3] System Detection")
 
     specs = detect_system_specs()
@@ -227,7 +238,7 @@ def _step_system_specs():
     avx2 = specs.get("avx2", False)
 
     ram_display = f"{ram} GB" if ram and ram > 0 else "Unknown (defaulting to middle tier)"
-    avx2_display = "Yes ✓" if avx2 else "Not detected"
+    avx2_display = "Yes [OK]" if avx2 else "Not detected"
 
     if console:
         t = Table(box=box.SIMPLE, show_header=False, padding=(0, 2))
@@ -258,7 +269,7 @@ def _step_system_specs():
 
 
 def _step_default_provider() -> str:
-    """[3/3] — Let the user pick their default provider."""
+    """[3/3] - Let the user pick their default provider."""
     _print("\n[bold][[3/3]][/bold] [cyan]Default Provider[/cyan]" if console else "\n[3/3] Default Provider")
 
     options = ["gemini", "anthropic", "openai", "auto"]
@@ -283,7 +294,7 @@ def _step_default_provider() -> str:
 
     return current
 
-# ─── Main Entry ───────────────────────────────────────────────────────────────
+# --- Main Entry ---
 
 def run_if_first_time():
     """Run the onboarding wizard if this is the first launch. No-op on subsequent runs."""
@@ -302,5 +313,5 @@ def run_if_first_time():
         pass
 
     _print()
-    _print("[bold green]✓ Setup complete! Starting DevMind...[/bold green]\n" if console else
-           "\n✓ Setup complete! Starting DevMind...\n")
+    _print("[bold green][OK] Setup complete! Starting DevMind...[/bold green]\n" if console else
+           "\n[OK] Setup complete! Starting DevMind...\n")

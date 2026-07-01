@@ -60,3 +60,20 @@ def test_provider_tool_result_format():
     gemini = GeminiProvider()
     res_g = gemini.format_tool_result_message("call_3", "ok result")
     assert res_g["role"] == "tool"
+
+def test_fallback_provider_general_exception():
+    from src.providers.fallback_provider import FallbackProvider
+    from src.providers.base import ProviderResponse
+    fb = FallbackProvider(start_provider="gemini")
+    
+    mock_p1 = MagicMock()
+    mock_p1.complete.side_effect = Exception("401 Authentication Error")
+    mock_p2 = MagicMock()
+    mock_p2.complete.return_value = ProviderResponse(text="Success", tool_calls=[])
+    fb._chain = [("gemini", lambda: mock_p1), ("anthropic", lambda: mock_p2)]
+    fb._current_name = "gemini"
+    fb._current_provider = mock_p1
+    
+    res = fb.complete([], [], "test")
+    assert res.text == "Success"
+    assert fb._current_name == "anthropic"

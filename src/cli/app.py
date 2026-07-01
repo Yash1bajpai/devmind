@@ -1,12 +1,25 @@
+import sys
 import time
 import typer
 from typing import Optional, Any, Tuple
+
+# Ensure safe output encoding on Windows terminals to prevent UnicodeEncodeError
+for stream in (sys.stdout, sys.stderr):
+    if hasattr(stream, "reconfigure"):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            try:
+                stream.reconfigure(errors="replace")
+            except Exception:
+                pass
+
 from ..utils.config import DEFAULT_PROVIDER, ConfigError
 from ..agent.memory import ConversationMemory
 from ..agent.core import Agent
 from . import display
 
-app = typer.Typer(help="DevMind — Autonomous AI Coding Agent")
+app = typer.Typer(help="DevMind - Autonomous AI Coding Agent")
 
 def get_provider_instance(provider_name: Any) -> Tuple[Any, str]:
     """
@@ -29,6 +42,12 @@ def get_provider_instance(provider_name: Any) -> Tuple[Any, str]:
     elif name_clean in ["openai", "gpt", "gpt-4o"]:
         from ..providers.openai_provider import OpenAIProvider
         return OpenAIProvider(), "openai"
+    elif name_clean in ["ollama", "local"]:
+        import os
+        from ..providers.openai_provider import OpenAIProvider
+        base_url = os.getenv("OLLAMA_HOST", "http://localhost:11434/v1")
+        local_model = os.getenv("LOCAL_MODEL", "qwen2.5-coder:7b")
+        return OpenAIProvider(model=local_model, base_url=base_url), f"local ({local_model})"
     elif name_clean == "auto":
         from ..providers.fallback_provider import FallbackProvider
         fb = FallbackProvider(start_provider=DEFAULT_PROVIDER)
@@ -48,6 +67,9 @@ def chat(
     max_iterations: int = typer.Option(10, "--max-iterations", "-m", help="Max tool iterations per query (default: 10)."),
 ):
     """Execute a single-turn chat instruction with autonomous tool calling."""
+    if not query or not query.strip():
+        display.print_error("Query cannot be empty.")
+        raise typer.Exit(code=1)
     try:
         prov, resolved_name = get_provider_instance(provider)
         memory = ConversationMemory()
@@ -130,12 +152,16 @@ def review(
     max_iterations: int = typer.Option(10, "--max-iterations", "-m", help="Max tool iterations per query (default: 10)."),
 ):
     """Review code quality, security, and potential bugs in a local file."""
+    if not file_path or not file_path.strip():
+        display.print_error("File path cannot be empty.")
+        raise typer.Exit(code=1)
     try:
+        from ..agent.tools import get_readonly_tools
         prov, resolved_name = get_provider_instance(provider)
         memory = ConversationMemory()
-        agent = Agent(provider=prov, memory=memory, verbose=verbose, max_iterations=max_iterations)
+        agent = Agent(provider=prov, memory=memory, verbose=verbose, max_iterations=max_iterations, tools=get_readonly_tools())
         display.print_header(resolved_name, getattr(prov, "model", "unknown"), mode=getattr(agent, "mode_str", ""))
-        query = f"Please review the code in '{file_path}'. Use read_file first, analyze for bugs, security issues, and clean code best practices."
+        query = f"Please perform a STRICTLY READ-ONLY review of the code in '{file_path}'. Use read_file first, analyze for bugs, security issues, and clean code best practices. Do NOT attempt to modify any files."
         start_time = time.time()
         response_text = agent.run(query, stream=not no_stream)
         duration = time.time() - start_time
@@ -160,6 +186,9 @@ def debug(
     Example:
         agent debug src/app.py --error "AttributeError: 'NoneType' object has no attribute 'stream'"
     """
+    if not file_path or not file_path.strip() or not error or not error.strip():
+        display.print_error("File path and error message cannot be empty.")
+        raise typer.Exit(code=1)
     try:
         prov, resolved_name = get_provider_instance(provider)
         memory = ConversationMemory()
@@ -190,6 +219,9 @@ def generate(
     Example:
         agent generate "Create an async web scraper using aiohttp" --output scraper.py
     """
+    if not prompt or not prompt.strip() or not output or not output.strip():
+        display.print_error("Prompt and output path cannot be empty.")
+        raise typer.Exit(code=1)
     try:
         prov, resolved_name = get_provider_instance(provider)
         memory = ConversationMemory()
@@ -210,6 +242,9 @@ def generate(
 def commit(
     provider: str = typer.Option(DEFAULT_PROVIDER, "--provider", "-p", help="LLM provider backend."),
     yes: bool = typer.Option(False, "--yes", "-y", help="Auto-confirm without prompting."),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show verbose ReAct tool trace."),
+    no_stream: bool = typer.Option(False, "--no-stream", help="Disable output streaming."),
+    max_iterations: int = typer.Option(10, "--max-iterations", "-m", help="Max tool iterations per query (default: 10)."),
 ):
     """Read git diff, generate a conventional commit message, and commit.
 
@@ -229,19 +264,19 @@ def commit(
     try:
         prov, resolved_name = get_provider_instance(provider)
         memory = ConversationMemory()
-        agent = Agent(provider=prov, memory=memory, verbose=False)
+        agent = Agent(provider=prov, memory=memory, verbose=verbose, max_iterations=max_iterations)
         display.print_header(resolved_name, getattr(prov, "model", "unknown"), mode="Commit Mode")
 
         query = (
             "Use the git_diff tool to read the current diff. "
             "Then generate a single conventional commit message (format: type(scope): description). "
             "Keep it under 72 characters. "
-            "Reply with ONLY the commit message string — no explanation, no quotes, no markdown."
+            "Reply with ONLY the commit message string - no explanation, no quotes, no markdown."
         )
 
         display.print_warn("Reading git diff and generating commit message...")
         start_time = time.time()
-        commit_message = agent.run(query, stream=False)
+        commit_message = agent.run(query, stream=not no_stream)
         duration = time.time() - start_time
 
         commit_message = commit_message.strip().strip('"').strip("'")
@@ -263,7 +298,7 @@ def commit(
             raise typer.Exit(code=1)
         else:
             display.print_warn(result.replace("Committed successfully:\n", ""))
-            typer.echo("\n  ✓ Done!")
+            typer.echo("\n  [OK] Done!")
 
         display.print_footer(agent.total_tokens, agent.estimated_cost, duration)
 

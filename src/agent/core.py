@@ -2,7 +2,7 @@ import os
 import re
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional, List
 from ..providers.base import BaseProvider, RateLimitError
 from .memory import ConversationMemory
 from .tools import get_all_tools, execute_tool
@@ -62,10 +62,10 @@ def parse_at_mentions(user_input: str) -> str:
 class Agent:
     """Core autonomous coding agent implementing the ReAct tool-use loop."""
 
-    def __init__(self, provider: BaseProvider, memory: ConversationMemory, max_iterations: int = 10, verbose: bool = True):
+    def __init__(self, provider: BaseProvider, memory: ConversationMemory, max_iterations: int = 10, verbose: bool = True, tools: Optional[list] = None):
         self.provider = provider
         self.memory = memory
-        self.tools = get_all_tools()
+        self.tools = tools if tools is not None else get_all_tools()
         self.max_iterations = max_iterations
         self.verbose = verbose
         self.total_input_tokens = 0

@@ -53,3 +53,13 @@ def test_execute_tool_dispatcher():
 
     res_unknown = execute_tool("fake_tool", {})
     assert "ERROR: Unknown tool" in res_unknown
+
+def test_get_readonly_tools():
+    from src.agent.tools import get_readonly_tools
+    ro_tools = get_readonly_tools()
+    names = [t.name for t in ro_tools]
+    assert "read_file" in names
+    assert "list_directory" in names
+    assert "write_file" not in names
+    assert "run_code" not in names
+    assert "git_commit" not in names
