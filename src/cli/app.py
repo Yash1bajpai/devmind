@@ -48,6 +48,9 @@ def get_provider_instance(provider_name: Any) -> Tuple[Any, str]:
         base_url = os.getenv("OLLAMA_HOST", "http://localhost:11434/v1")
         local_model = os.getenv("LOCAL_MODEL", "qwen2.5-coder:7b")
         return OpenAIProvider(model=local_model, base_url=base_url), f"local ({local_model})"
+    elif name_clean in ["mock", "demo"]:
+        from ..providers.mock_provider import MockProvider
+        return MockProvider(), "Demo (mock)"
     elif name_clean == "auto":
         from ..providers.fallback_provider import FallbackProvider
         fb = FallbackProvider(start_provider=DEFAULT_PROVIDER)
@@ -57,6 +60,7 @@ def get_provider_instance(provider_name: Any) -> Tuple[Any, str]:
         display.print_warn(f"Unknown provider '{provider_name}'. Using Anthropic fallback.")
         from ..providers.anthropic_provider import AnthropicProvider
         return AnthropicProvider(), "anthropic"
+
 
 @app.command()
 def chat(
